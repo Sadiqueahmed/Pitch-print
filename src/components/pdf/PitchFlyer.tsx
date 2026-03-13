@@ -10,6 +10,11 @@ import {
 } from '@react-pdf/renderer';
 import React from 'react';
 
+interface Feature {
+  title: string;
+  description: string;
+}
+
 // Theme configurations
 const themes = {
   dark: {
@@ -21,6 +26,8 @@ const themes = {
     border: '#334155',
     featureBg: '#1e293b',
     footerBg: '#0f172a',
+    footerText: '#22d3ee',
+    footerMuted: '#94a3b8',
   },
   elegant: {
     background: '#fafafa',
@@ -31,6 +38,8 @@ const themes = {
     border: '#e5e7eb',
     featureBg: '#f3f4f6',
     footerBg: '#1a1a1a',
+    footerText: '#ffffff',
+    footerMuted: '#d1d5db',
   },
   traditional: {
     background: '#fefdfb',
@@ -41,6 +50,8 @@ const themes = {
     border: '#e7ddd0',
     featureBg: '#fff8f0',
     footerBg: '#3d2914',
+    footerText: '#ffffff',
+    footerMuted: '#d1d5db',
   },
   modern: {
     background: '#ffffff',
@@ -51,202 +62,183 @@ const themes = {
     border: '#e2e8f0',
     featureBg: '#f1f5f9',
     footerBg: '#0f172a',
+    footerText: '#ffffff',
+    footerMuted: '#94a3b8',
   },
 };
 
-// Create styles based on theme
-const createStyles = (theme: keyof typeof themes) => {
-  const t = themes[theme];
-  return StyleSheet.create({
-    page: {
-      backgroundColor: t.background,
-      padding: 48,
-      fontFamily: 'Helvetica',
-    },
-    container: {
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    
-    // Header
-    brandTag: {
-      fontSize: 9,
-      color: t.accent,
-      letterSpacing: 3,
-      textTransform: 'uppercase',
-      marginBottom: 10,
-      fontFamily: 'Courier',
-      fontWeight: 'bold',
-    },
-    headline: {
-      fontSize: 30,
-      fontWeight: 'bold',
-      color: t.text,
-      lineHeight: 1.2,
-      marginBottom: 10,
-    },
-    subheadline: {
-      fontSize: 12,
-      color: t.muted,
-      lineHeight: 1.6,
-      maxWidth: 400,
-    },
-    
-    // QR Section
-    qrSection: {
-      alignItems: 'center',
-      marginVertical: 28,
-      padding: 24,
-      backgroundColor: t.card,
-      borderRadius: 12,
-      borderWidth: theme === 'elegant' || theme === 'modern' ? 1 : 0,
-      borderColor: t.border,
-    },
-    qrImage: {
-      width: 140,
-      height: 140,
-      marginBottom: 10,
-    },
-    scanLabel: {
-      fontSize: 13,
-      color: t.text,
-      fontWeight: 'bold',
-    },
-    scanHint: {
-      fontSize: 10,
-      color: t.muted,
-      marginTop: 4,
-    },
-    
-    // Stats
-    statsRow: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      gap: 36,
-      marginVertical: 18,
-      paddingVertical: 14,
-      borderTopWidth: 1,
-      borderBottomWidth: 1,
-      borderColor: t.border,
-    },
-    statItem: {
-      alignItems: 'center',
-    },
-    statValue: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      color: t.accent,
-    },
-    statLabel: {
-      fontSize: 8,
-      color: t.muted,
-      marginTop: 3,
-      letterSpacing: 0.5,
-      textTransform: 'uppercase',
-    },
-    
-    // Features
-    featuresSection: {
-      marginVertical: 16,
-    },
-    featuresTitle: {
-      fontSize: 11,
-      fontWeight: 'bold',
-      color: t.text,
-      marginBottom: 12,
-      textAlign: 'center',
-    },
-    featuresGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      gap: 8,
-    },
-    featureCard: {
-      width: '48%',
-      padding: 12,
-      backgroundColor: t.featureBg,
-      borderRadius: 8,
-      borderLeftWidth: 3,
-      borderLeftColor: t.accent,
-    },
-    featureTitle: {
-      fontSize: 10,
-      fontWeight: 'bold',
-      color: t.text,
-      marginBottom: 3,
-    },
-    featureDesc: {
-      fontSize: 8,
-      color: t.muted,
-      lineHeight: 1.4,
-    },
-    
-    // Video Link Section
-    videoSection: {
-      alignItems: 'center',
-      marginVertical: 16,
-      padding: 16,
-      backgroundColor: t.card,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: t.accent,
-    },
-    videoQR: {
-      width: 70,
-      height: 70,
-      marginBottom: 8,
-    },
-    videoLabel: {
-      fontSize: 10,
-      color: t.accent,
-      fontWeight: 'bold',
-    },
-    videoHint: {
-      fontSize: 8,
-      color: t.muted,
-      marginTop: 2,
-    },
-    
-    // Footer
-    footer: {
-      marginTop: 'auto',
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 18,
-      backgroundColor: t.footerBg,
-      borderRadius: 10,
-      gap: 16,
-    },
-    footerText: {
-      flex: 1,
-    },
-    footerHeading: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      color: theme === 'elegant' || theme === 'traditional' ? '#ffffff' : t.accent,
-      marginBottom: 5,
-    },
-    footerSubtext: {
-      fontSize: 9,
-      color: theme === 'elegant' || theme === 'traditional' ? '#d1d5db' : t.muted,
-      lineHeight: 1.5,
-    },
-    footerQR: {
-      width: 65,
-      height: 65,
-      backgroundColor: '#ffffff',
-      borderRadius: 6,
-      padding: 3,
-    },
-  });
-};
-
-interface Feature {
-  title: string;
-  description: string;
-}
+const createStyles = (themeName: keyof typeof themes, t: typeof themes.dark) => StyleSheet.create({
+  page: {
+    backgroundColor: t.background,
+    padding: 48,
+    fontFamily: 'Helvetica',
+  },
+  container: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  brandTag: {
+    fontSize: 9,
+    color: t.accent,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    fontFamily: 'Courier',
+    fontWeight: 'bold',
+  },
+  headline: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: t.text,
+    lineHeight: 1.2,
+    marginBottom: 10,
+  },
+  subheadline: {
+    fontSize: 12,
+    color: t.muted,
+    lineHeight: 1.6,
+    maxWidth: 400,
+  },
+  qrSection: {
+    alignItems: 'center',
+    marginVertical: 28,
+    padding: 24,
+    backgroundColor: t.card,
+    borderRadius: 12,
+    borderWidth: themeName === 'elegant' || themeName === 'modern' ? 1 : 0,
+    borderColor: t.border,
+  },
+  qrImage: {
+    width: 140,
+    height: 140,
+    marginBottom: 10,
+  },
+  scanLabel: {
+    fontSize: 13,
+    color: t.text,
+    fontWeight: 'bold',
+  },
+  scanHint: {
+    fontSize: 10,
+    color: t.muted,
+    marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 36,
+    marginVertical: 18,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: t.border,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: t.accent,
+  },
+  statLabel: {
+    fontSize: 8,
+    color: t.muted,
+    marginTop: 3,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  featuresSection: {
+    marginVertical: 16,
+  },
+  featuresTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: t.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  featureCard: {
+    width: '48%',
+    padding: 12,
+    backgroundColor: t.featureBg,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: t.accent,
+  },
+  featureTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: t.text,
+    marginBottom: 3,
+  },
+  featureDesc: {
+    fontSize: 8,
+    color: t.muted,
+    lineHeight: 1.4,
+  },
+  videoSection: {
+    alignItems: 'center',
+    marginVertical: 16,
+    padding: 16,
+    backgroundColor: t.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: t.accent,
+  },
+  videoQR: {
+    width: 70,
+    height: 70,
+    marginBottom: 8,
+  },
+  videoLabel: {
+    fontSize: 10,
+    color: t.accent,
+    fontWeight: 'bold',
+  },
+  videoHint: {
+    fontSize: 8,
+    color: t.muted,
+    marginTop: 2,
+  },
+  footer: {
+    marginTop: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 18,
+    backgroundColor: t.footerBg,
+    borderRadius: 10,
+    gap: 16,
+  },
+  footerText: {
+    flex: 1,
+  },
+  footerHeading: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: t.footerText,
+    marginBottom: 5,
+  },
+  footerSubtext: {
+    fontSize: 9,
+    color: t.footerMuted,
+    lineHeight: 1.5,
+  },
+  footerQR: {
+    width: 65,
+    height: 65,
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    padding: 3,
+  },
+});
 
 interface PitchFlyerProps {
   shopName: string;
@@ -258,7 +250,7 @@ interface PitchFlyerProps {
   headline?: string;
   subheadline?: string;
   features?: Feature[];
-  theme?: 'dark' | 'elegant' | 'traditional' | 'modern';
+  theme?: keyof typeof themes;
 }
 
 export function PitchFlyer({
@@ -272,7 +264,8 @@ export function PitchFlyer({
   features,
   theme = 'dark',
 }: PitchFlyerProps) {
-  const styles = createStyles(theme);
+  const t = themes[theme];
+  const styles = createStyles(theme, t);
   
   const defaultFeatures: Feature[] = [
     { title: 'Lightning Fast', description: 'Loads in under 2 seconds.' },

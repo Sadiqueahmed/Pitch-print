@@ -747,3 +747,20 @@ prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.
 prisma:query SELECT 1
 prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
  GET /api/leads 200 in 37ms (compile: 30ms, render: 7ms)
+ GET / 200 in 44ms (compile: 5ms, render: 39ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
+ GET /api/leads 200 in 8ms (compile: 1722µs, render: 6ms)
+ GET / 200 in 43ms (compile: 4ms, render: 40ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
+ GET /api/leads 200 in 7ms (compile: 1926µs, render: 5ms)
+ GET / 200 in 40ms (compile: 1905µs, render: 38ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
+ GET /api/leads 200 in 6ms (compile: 1868µs, render: 4ms)
+✓ Compiled in 239ms
+ GET / 200 in 75ms (compile: 41ms, render: 35ms)
+prisma:query SELECT 1
+ GET /api/leads 200 in 9ms (compile: 2ms, render: 6ms)
+prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?

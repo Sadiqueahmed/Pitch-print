@@ -1,14 +1,12 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { PitchFlyer } from '@/components/pdf/PitchFlyer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -23,10 +21,6 @@ import {
   Loader2,
   CheckCircle,
   Eye,
-  ArrowRight,
-  Monitor,
-  Palette,
-  Store,
   Video,
   Database,
   X,
@@ -35,6 +29,17 @@ import {
   Calendar,
   Trash2
 } from 'lucide-react';
+
+// Dynamic import for PDF to avoid SSR issues
+const PDFDownloadLink = dynamic(
+  () => import('@react-pdf/renderer').then(mod => mod.PDFDownloadLink),
+  { ssr: false, loading: () => <Button disabled className="h-11">Loading PDF...</Button> }
+);
+
+const PitchFlyer = dynamic(
+  () => import('@/components/pdf/PitchFlyer').then(mod => mod.PitchFlyer),
+  { ssr: false }
+);
 
 interface QRDataUrls {
   projectQR: string;
@@ -181,10 +186,16 @@ export default function PitchPrintApp() {
   const [qrDataUrls, setQrDataUrls] = useState<QRDataUrls | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [pdfReady, setPdfReady] = useState(false);
   
   // Leads dashboard
   const [leads, setLeads] = useState<Lead[]>([]);
   const [showDashboard, setShowDashboard] = useState(false);
+
+  // Mark PDF as ready after mount
+  useEffect(() => {
+    setPdfReady(true);
+  }, []);
 
   // Load leads from API on mount
   useEffect(() => {
@@ -194,8 +205,10 @@ export default function PitchPrintApp() {
   const fetchLeads = async () => {
     try {
       const response = await fetch('/api/leads');
-      const data = await response.json();
-      setLeads(data);
+      if (response.ok) {
+        const data = await response.json();
+        setLeads(Array.isArray(data) ? data : []);
+      }
     } catch (error) {
       console.error('Error fetching leads:', error);
     }
@@ -350,10 +363,7 @@ export default function PitchPrintApp() {
                   <SelectContent>
                     {Object.entries(themeConfigs).map(([key, config]) => (
                       <SelectItem key={key} value={key}>
-                        <span className="flex items-center gap-2">
-                          <Palette className="h-3 w-3" />
-                          {config.label}
-                        </span>
+                        {config.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -368,10 +378,7 @@ export default function PitchPrintApp() {
                   <SelectContent>
                     {Object.entries(businessTypes).map(([key, config]) => (
                       <SelectItem key={key} value={key}>
-                        <span className="flex items-center gap-2">
-                          <Store className="h-3 w-3" />
-                          {config.label}
-                        </span>
+                        {config.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -523,7 +530,7 @@ export default function PitchPrintApp() {
                 )}
               </Button>
 
-              {isReady && qrDataUrls && (
+              {isReady && qrDataUrls && pdfReady && (
                 <div className="flex gap-2">
                   <PDFDownloadLink
                     document={
@@ -651,7 +658,7 @@ export default function PitchPrintApp() {
               </div>
 
               {/* Footer */}
-              <div className={`flex items-center gap-3 ${theme === 'dark' || theme === 'traditional' ? 'bg-slate-900' : theme === 'modern' ? 'bg-slate-900' : 'bg-gray-900'} rounded-xl p-3.5`}>
+              <div className={`flex items-center gap-3 bg-gray-900 rounded-xl p-3.5`}>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-white">Interested? Let's Chat</p>
                   <p className="text-xs text-gray-400 mt-0.5">Scan to message via WhatsApp</p>
