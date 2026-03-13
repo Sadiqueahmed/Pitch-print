@@ -9,7 +9,12 @@
 
 ### 🖥️ Live Application Preview
 
-[![Med-Varta Screenshot](https://v1.screenshot.11ty.dev/https%3A%2F%2Fmed-varta.vercel.app%2F/opengraph/_2024_01_01)](https://pitch-print.vercel.app/)
+<a href="https://pitch-print.vercel.app/">
+  <img src="https://api.microlink.io?url=https%3A%2F%2Fpitch-print.vercel.app&screenshot=true&meta=false&embed=screenshot.url" alt="Pitch Print Live Preview" width="100%" />
+</a>
+
+> [!IMPORTANT]
+> **[Click here to open the Interactive Live Demo](https://pitch-print.vercel.app/)**
 
 
 
