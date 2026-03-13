@@ -738,3 +738,8 @@ prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.
 prisma:query SELECT 1
 prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
  GET /api/leads 200 in 11ms (compile: 3ms, render: 8ms)
+ GET / 200 in 51ms (compile: 3ms, render: 48ms)
+ GET /api/leads 200 in 14ms (compile: 4ms, render: 11ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`Lead`.`id`, `main`.`Lead`.`shopName`, `main`.`Lead`.`demoUrl`, `main`.`Lead`.`whatsappNumber`, `main`.`Lead`.`brandName`, `main`.`Lead`.`createdAt`, `main`.`Lead`.`updatedAt` FROM `main`.`Lead` WHERE 1=1 ORDER BY `main`.`Lead`.`createdAt` DESC LIMIT ? OFFSET ?
+✓ Compiled in 593ms

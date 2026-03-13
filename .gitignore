@@ -49,3 +49,9 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Prisma
+prisma/dev.db
+prisma/*.db-journal
+db/*.db
+*.db-journal
