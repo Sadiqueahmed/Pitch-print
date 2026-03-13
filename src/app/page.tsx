@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,95 +49,6 @@ interface Lead {
 interface Feature {
   title: string;
   description: string;
-}
-
-// PDF Download Button Component - renders only on client
-function PDFDownloadButton({ 
-  isReady, 
-  qrDataUrls, 
-  shopName, 
-  demoUrl, 
-  brandName, 
-  headline, 
-  subheadline, 
-  currentFeatures, 
-  theme,
-  saveLead 
-}: {
-  isReady: boolean;
-  qrDataUrls: QRDataUrls | null;
-  shopName: string;
-  demoUrl: string;
-  brandName: string;
-  headline: string;
-  subheadline: string;
-  currentFeatures: Feature[];
-  theme: string;
-  saveLead: () => void;
-}) {
-  const [pdfReady, setPdfReady] = useState(false);
-  const [PDFDownloadLink, setPDFDownloadLink] = useState<React.ComponentType<any> | null>(null);
-  const [PitchFlyer, setPitchFlyer] = useState<React.ComponentType<any> | null>(null);
-
-  useEffect(() => {
-    // Dynamic import only on client side
-    const loadPdf = async () => {
-      try {
-        const pdfRenderer = await import('@react-pdf/renderer');
-        const flyerModule = await import('@/components/pdf/PitchFlyer');
-        setPDFDownloadLink(() => pdfRenderer.PDFDownloadLink);
-        setPitchFlyer(() => flyerModule.PitchFlyer);
-        setPdfReady(true);
-      } catch (error) {
-        console.error('Error loading PDF:', error);
-      }
-    };
-    loadPdf();
-  }, []);
-
-  if (!isReady || !qrDataUrls || !pdfReady || !PDFDownloadLink || !PitchFlyer) {
-    return null;
-  }
-
-  return (
-    <div className="flex gap-2">
-      <PDFDownloadLink
-        document={
-          <PitchFlyer
-            shopName={shopName}
-            demoUrl={demoUrl}
-            brandName={brandName}
-            projectQRDataUrl={qrDataUrls.projectQR}
-            whatsappQRDataUrl={qrDataUrls.whatsappQR}
-            videoQRDataUrl={qrDataUrls.videoQR}
-            headline={headline}
-            subheadline={subheadline}
-            features={currentFeatures}
-            theme={theme as 'dark' | 'elegant' | 'traditional' | 'modern'}
-          />
-        }
-        fileName={`pitch-${shopName.toLowerCase().replace(/\s+/g, '-')}.pdf`}
-        style={{ textDecoration: 'none', flex: 1 }}
-      >
-        {({ loading }: { loading: boolean }) => (
-          <Button
-            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700"
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4 mr-2" />
-            )}
-            Download PDF
-          </Button>
-        )}
-      </PDFDownloadLink>
-      <Button variant="outline" className="h-11 px-4" onClick={saveLead}>
-        Save Lead
-      </Button>
-    </div>
-  );
 }
 
 // Business type presets with features
@@ -197,6 +110,11 @@ const themeConfigs = {
     muted: 'text-slate-400',
     accent: 'text-cyan-400',
     border: 'border-slate-700',
+    pdfBg: '#0f172a',
+    pdfCard: '#1e293b',
+    pdfText: '#ffffff',
+    pdfMuted: '#94a3b8',
+    pdfAccent: '#22d3ee',
   },
   elegant: {
     label: 'Elegant',
@@ -206,6 +124,11 @@ const themeConfigs = {
     muted: 'text-gray-500',
     accent: 'text-emerald-600',
     border: 'border-gray-200',
+    pdfBg: '#fafafa',
+    pdfCard: '#ffffff',
+    pdfText: '#1a1a1a',
+    pdfMuted: '#6b7280',
+    pdfAccent: '#059669',
   },
   traditional: {
     label: 'Traditional',
@@ -215,6 +138,11 @@ const themeConfigs = {
     muted: 'text-amber-700',
     accent: 'text-orange-600',
     border: 'border-amber-200',
+    pdfBg: '#fefdfb',
+    pdfCard: '#fff8f0',
+    pdfText: '#3d2914',
+    pdfMuted: '#7c5e3c',
+    pdfAccent: '#c2410c',
   },
   modern: {
     label: 'Modern',
@@ -224,14 +152,12 @@ const themeConfigs = {
     muted: 'text-slate-500',
     accent: 'text-violet-600',
     border: 'border-slate-200',
+    pdfBg: '#ffffff',
+    pdfCard: '#f8fafc',
+    pdfText: '#0f172a',
+    pdfMuted: '#64748b',
+    pdfAccent: '#7c3aed',
   },
-};
-
-// Generate QR code via API
-const generateQRDataUrl = async (value: string, size: number = 200): Promise<string> => {
-  const response = await fetch(`/api/qrcode?value=${encodeURIComponent(value)}&size=${size}`);
-  const data = await response.json();
-  return data.dataUrl;
 };
 
 // Format WhatsApp URL with pre-filled message
@@ -240,6 +166,195 @@ const formatWhatsAppUrl = (number: string, shopName: string, brandName: string):
   const formattedNumber = cleanNumber.startsWith('91') ? cleanNumber : `91${cleanNumber}`;
   const message = encodeURIComponent(`Hi! I'm the owner of ${shopName}. I just scanned the flyer from ${brandName}. I'm interested in the website.`);
   return `https://wa.me/${formattedNumber}?text=${message}`;
+};
+
+// Generate QR code as data URL
+const generateQRDataUrl = async (value: string, size: number = 200): Promise<string> => {
+  return await QRCode.toDataURL(value, {
+    width: size,
+    margin: 2,
+    color: {
+      dark: '#000000',
+      light: '#ffffff',
+    },
+  });
+};
+
+// Add image to PDF from data URL
+const addImageFromDataUrl = (doc: jsPDF, dataUrl: string, x: number, y: number, w: number, h: number) => {
+  const base64Data = dataUrl.split(',')[1];
+  doc.addImage(base64Data, 'PNG', x, y, w, h);
+};
+
+// Generate PDF using jsPDF
+const generatePDF = async (
+  shopName: string,
+  brandName: string,
+  headline: string,
+  subheadline: string,
+  features: Feature[],
+  theme: keyof typeof themeConfigs,
+  qrDataUrls: QRDataUrls
+): Promise<void> => {
+  const t = themeConfigs[theme];
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 20;
+  let y = margin;
+
+  // Background
+  doc.setFillColor(t.pdfBg);
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  // Brand tag
+  doc.setFontSize(9);
+  doc.setTextColor(t.pdfAccent);
+  doc.setFont('helvetica', 'bold');
+  doc.text(brandName.toUpperCase(), margin, y, { align: 'left' });
+  y += 10;
+
+  // Headline
+  doc.setFontSize(24);
+  doc.setTextColor(t.pdfText);
+  doc.setFont('helvetica', 'bold');
+  const headlineText = headline || `I built a new digital home for ${shopName}.`;
+  const headlineLines = doc.splitTextToSize(headlineText, pageWidth - margin * 2);
+  doc.text(headlineLines, margin, y);
+  y += headlineLines.length * 10 + 5;
+
+  // Subheadline
+  doc.setFontSize(11);
+  doc.setTextColor(t.pdfMuted);
+  doc.setFont('helvetica', 'normal');
+  const subheadlineText = subheadline || 'A modern, fast, and mobile-ready website designed for your business.';
+  const subheadlineLines = doc.splitTextToSize(subheadlineText, pageWidth - margin * 2);
+  doc.text(subheadlineLines, margin, y);
+  y += subheadlineLines.length * 5 + 15;
+
+  // QR Section with card background
+  const qrCardY = y;
+  const qrCardHeight = 65;
+  doc.setFillColor(t.pdfCard);
+  doc.roundedRect(margin, qrCardY, pageWidth - margin * 2, qrCardHeight, 5, 5, 'F');
+  
+  // QR Code
+  const qrSize = 40;
+  const qrX = (pageWidth - qrSize) / 2;
+  if (qrDataUrls.projectQR) {
+    addImageFromDataUrl(doc, qrDataUrls.projectQR, qrX, qrCardY + 5, qrSize, qrSize);
+  }
+  
+  // QR Label
+  doc.setFontSize(12);
+  doc.setTextColor(t.pdfText);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Scan to Preview Website', pageWidth / 2, qrCardY + 55, { align: 'center' });
+  
+  y = qrCardY + qrCardHeight + 15;
+
+  // Stats row
+  doc.setDrawColor(t.pdfAccent);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 8;
+  
+  const stats = [
+    { value: '<2s', label: 'Load' },
+    { value: '100%', label: 'Mobile' },
+    { value: 'SEO', label: 'Ready' },
+  ];
+  
+  const statWidth = (pageWidth - margin * 2) / stats.length;
+  stats.forEach((stat, i) => {
+    const statX = margin + statWidth * i + statWidth / 2;
+    doc.setFontSize(14);
+    doc.setTextColor(t.pdfAccent);
+    doc.setFont('helvetica', 'bold');
+    doc.text(stat.value, statX, y, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setTextColor(t.pdfMuted);
+    doc.setFont('helvetica', 'normal');
+    doc.text(stat.label, statX, y + 5, { align: 'center' });
+  });
+  
+  y += 15;
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  // Features grid
+  doc.setFontSize(10);
+  doc.setTextColor(t.pdfText);
+  doc.setFont('helvetica', 'bold');
+  doc.text('What You Get', pageWidth / 2, y, { align: 'center' });
+  y += 8;
+
+  const featureWidth = (pageWidth - margin * 2 - 5) / 2;
+  const featureHeight = 20;
+  
+  features.slice(0, 4).forEach((feature, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const fx = margin + col * (featureWidth + 5);
+    const fy = y + row * (featureHeight + 5);
+    
+    // Feature card
+    doc.setFillColor(t.pdfCard);
+    doc.roundedRect(fx, fy, featureWidth, featureHeight, 3, 3, 'F');
+    
+    // Accent border
+    doc.setDrawColor(t.pdfAccent);
+    doc.setLineWidth(1);
+    doc.line(fx, fy + 1, fx, fy + featureHeight - 1);
+    
+    // Feature text
+    doc.setFontSize(9);
+    doc.setTextColor(t.pdfText);
+    doc.setFont('helvetica', 'bold');
+    doc.text(feature.title, fx + 4, fy + 7);
+    doc.setFontSize(7);
+    doc.setTextColor(t.pdfMuted);
+    doc.setFont('helvetica', 'normal');
+    const descLines = doc.splitTextToSize(feature.description, featureWidth - 8);
+    doc.text(descLines.slice(0, 2), fx + 4, fy + 13);
+  });
+  
+  y += 55;
+
+  // Footer section
+  const footerHeight = 35;
+  doc.setFillColor('#0f172a');
+  doc.roundedRect(margin, y, pageWidth - margin * 2, footerHeight, 5, 5, 'F');
+  
+  // Footer text
+  doc.setFontSize(13);
+  doc.setTextColor('#ffffff');
+  doc.setFont('helvetica', 'bold');
+  doc.text("Interested? Let's Chat", margin + 10, y + 12);
+  doc.setFontSize(8);
+  doc.setTextColor('#94a3b8');
+  doc.setFont('helvetica', 'normal');
+  doc.text('Scan to message the developer anonymously via WhatsApp.', margin + 10, y + 20);
+  
+  // WhatsApp QR
+  const footerQrSize = 22;
+  const footerQrX = pageWidth - margin - footerQrSize - 8;
+  const footerQrY = y + 6;
+  
+  if (qrDataUrls.whatsappQR) {
+    // White background for QR
+    doc.setFillColor('#ffffff');
+    doc.roundedRect(footerQrX - 2, footerQrY - 2, footerQrSize + 4, footerQrSize + 4, 2, 2, 'F');
+    addImageFromDataUrl(doc, qrDataUrls.whatsappQR, footerQrX, footerQrY, footerQrSize, footerQrSize);
+  }
+
+  // Save the PDF
+  doc.save(`pitch-${shopName.toLowerCase().replace(/\s+/g, '-')}.pdf`);
 };
 
 export default function PitchPrintApp() {
@@ -263,6 +378,7 @@ export default function PitchPrintApp() {
   const [qrDataUrls, setQrDataUrls] = useState<QRDataUrls | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // Leads dashboard
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -286,7 +402,7 @@ export default function PitchPrintApp() {
   };
 
   // Generate QR codes
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (!shopName || !demoUrl || !whatsappNumber) return;
     
     setIsGenerating(true);
@@ -308,7 +424,7 @@ export default function PitchPrintApp() {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [shopName, demoUrl, whatsappNumber, brandName, videoUrl]);
 
   // Save lead to database
   const saveLead = async () => {
@@ -331,6 +447,28 @@ export default function PitchPrintApp() {
       fetchLeads();
     } catch (error) {
       console.error('Error deleting lead:', error);
+    }
+  };
+
+  // Download PDF
+  const handleDownloadPDF = async () => {
+    if (!qrDataUrls) return;
+    
+    setIsDownloading(true);
+    try {
+      await generatePDF(
+        shopName,
+        brandName,
+        headline,
+        subheadline,
+        currentFeatures,
+        theme,
+        qrDataUrls
+      );
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -385,7 +523,7 @@ export default function PitchPrintApp() {
               </Button>
             </div>
             {leads.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
                 {leads.map((lead) => (
                   <div key={lead.id} className="bg-white rounded-lg p-4 border border-gray-200 flex justify-between items-start">
                     <div>
@@ -601,18 +739,25 @@ export default function PitchPrintApp() {
                 )}
               </Button>
 
-              <PDFDownloadButton
-                isReady={isReady}
-                qrDataUrls={qrDataUrls}
-                shopName={shopName}
-                demoUrl={demoUrl}
-                brandName={brandName}
-                headline={headline}
-                subheadline={subheadline}
-                currentFeatures={currentFeatures}
-                theme={theme}
-                saveLead={saveLead}
-              />
+              {isReady && qrDataUrls && (
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={handleDownloadPDF}
+                    disabled={isDownloading}
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    Download PDF
+                  </Button>
+                  <Button variant="outline" className="h-11 px-4" onClick={saveLead}>
+                    Save Lead
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
