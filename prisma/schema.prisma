@@ -11,12 +11,12 @@ datasource db {
 }
 
 model Lead {
-  id              String   @id @default(cuid())
-  shopName        String
-  demoUrl         String
-  whatsappNumber  String
-  brandName       String
-  location        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  shopName       String
+  demoUrl        String
+  whatsappNumber String
+  brandName      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  location       String?
 }
