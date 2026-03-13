@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,17 +29,6 @@ import {
   Trash2
 } from 'lucide-react';
 
-// Dynamic import for PDF to avoid SSR issues
-const PDFDownloadLink = dynamic(
-  () => import('@react-pdf/renderer').then(mod => mod.PDFDownloadLink),
-  { ssr: false, loading: () => <Button disabled className="h-11">Loading PDF...</Button> }
-);
-
-const PitchFlyer = dynamic(
-  () => import('@/components/pdf/PitchFlyer').then(mod => mod.PitchFlyer),
-  { ssr: false }
-);
-
 interface QRDataUrls {
   projectQR: string;
   whatsappQR: string;
@@ -59,6 +47,95 @@ interface Lead {
 interface Feature {
   title: string;
   description: string;
+}
+
+// PDF Download Button Component - renders only on client
+function PDFDownloadButton({ 
+  isReady, 
+  qrDataUrls, 
+  shopName, 
+  demoUrl, 
+  brandName, 
+  headline, 
+  subheadline, 
+  currentFeatures, 
+  theme,
+  saveLead 
+}: {
+  isReady: boolean;
+  qrDataUrls: QRDataUrls | null;
+  shopName: string;
+  demoUrl: string;
+  brandName: string;
+  headline: string;
+  subheadline: string;
+  currentFeatures: Feature[];
+  theme: string;
+  saveLead: () => void;
+}) {
+  const [pdfReady, setPdfReady] = useState(false);
+  const [PDFDownloadLink, setPDFDownloadLink] = useState<React.ComponentType<any> | null>(null);
+  const [PitchFlyer, setPitchFlyer] = useState<React.ComponentType<any> | null>(null);
+
+  useEffect(() => {
+    // Dynamic import only on client side
+    const loadPdf = async () => {
+      try {
+        const pdfRenderer = await import('@react-pdf/renderer');
+        const flyerModule = await import('@/components/pdf/PitchFlyer');
+        setPDFDownloadLink(() => pdfRenderer.PDFDownloadLink);
+        setPitchFlyer(() => flyerModule.PitchFlyer);
+        setPdfReady(true);
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+      }
+    };
+    loadPdf();
+  }, []);
+
+  if (!isReady || !qrDataUrls || !pdfReady || !PDFDownloadLink || !PitchFlyer) {
+    return null;
+  }
+
+  return (
+    <div className="flex gap-2">
+      <PDFDownloadLink
+        document={
+          <PitchFlyer
+            shopName={shopName}
+            demoUrl={demoUrl}
+            brandName={brandName}
+            projectQRDataUrl={qrDataUrls.projectQR}
+            whatsappQRDataUrl={qrDataUrls.whatsappQR}
+            videoQRDataUrl={qrDataUrls.videoQR}
+            headline={headline}
+            subheadline={subheadline}
+            features={currentFeatures}
+            theme={theme as 'dark' | 'elegant' | 'traditional' | 'modern'}
+          />
+        }
+        fileName={`pitch-${shopName.toLowerCase().replace(/\s+/g, '-')}.pdf`}
+        style={{ textDecoration: 'none', flex: 1 }}
+      >
+        {({ loading }: { loading: boolean }) => (
+          <Button
+            className="w-full h-11 bg-emerald-600 hover:bg-emerald-700"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            Download PDF
+          </Button>
+        )}
+      </PDFDownloadLink>
+      <Button variant="outline" className="h-11 px-4" onClick={saveLead}>
+        Save Lead
+      </Button>
+    </div>
+  );
 }
 
 // Business type presets with features
@@ -186,16 +263,10 @@ export default function PitchPrintApp() {
   const [qrDataUrls, setQrDataUrls] = useState<QRDataUrls | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [pdfReady, setPdfReady] = useState(false);
   
   // Leads dashboard
   const [leads, setLeads] = useState<Lead[]>([]);
   const [showDashboard, setShowDashboard] = useState(false);
-
-  // Mark PDF as ready after mount
-  useEffect(() => {
-    setPdfReady(true);
-  }, []);
 
   // Load leads from API on mount
   useEffect(() => {
@@ -530,45 +601,18 @@ export default function PitchPrintApp() {
                 )}
               </Button>
 
-              {isReady && qrDataUrls && pdfReady && (
-                <div className="flex gap-2">
-                  <PDFDownloadLink
-                    document={
-                      <PitchFlyer
-                        shopName={shopName}
-                        demoUrl={demoUrl}
-                        brandName={brandName}
-                        projectQRDataUrl={qrDataUrls.projectQR}
-                        whatsappQRDataUrl={qrDataUrls.whatsappQR}
-                        videoQRDataUrl={qrDataUrls.videoQR}
-                        headline={headline}
-                        subheadline={subheadline}
-                        features={currentFeatures}
-                        theme={theme}
-                      />
-                    }
-                    fileName={`pitch-${shopName.toLowerCase().replace(/\s+/g, '-')}.pdf`}
-                    className="flex-1"
-                  >
-                    {({ loading }) => (
-                      <Button
-                        className="w-full h-11 bg-emerald-600 hover:bg-emerald-700"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Download className="h-4 w-4 mr-2" />
-                        )}
-                        Download PDF
-                      </Button>
-                    )}
-                  </PDFDownloadLink>
-                  <Button variant="outline" className="h-11 px-4" onClick={saveLead}>
-                    Save Lead
-                  </Button>
-                </div>
-              )}
+              <PDFDownloadButton
+                isReady={isReady}
+                qrDataUrls={qrDataUrls}
+                shopName={shopName}
+                demoUrl={demoUrl}
+                brandName={brandName}
+                headline={headline}
+                subheadline={subheadline}
+                currentFeatures={currentFeatures}
+                theme={theme}
+                saveLead={saveLead}
+              />
             </div>
           </div>
 
@@ -658,7 +702,7 @@ export default function PitchPrintApp() {
               </div>
 
               {/* Footer */}
-              <div className={`flex items-center gap-3 bg-gray-900 rounded-xl p-3.5`}>
+              <div className="flex items-center gap-3 bg-gray-900 rounded-xl p-3.5">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-white">Interested? Let's Chat</p>
                   <p className="text-xs text-gray-400 mt-0.5">Scan to message via WhatsApp</p>
