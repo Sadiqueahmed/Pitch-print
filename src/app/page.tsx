@@ -100,7 +100,7 @@ const businessTypes: Record<string, { label: string; features: Feature[] }> = {
   },
 };
 
-// Theme configurations
+// Theme configurations with rich, vibrant colors for PDF
 const themeConfigs = {
   dark: {
     label: 'Dark Mode',
@@ -110,11 +110,12 @@ const themeConfigs = {
     muted: 'text-slate-400',
     accent: 'text-cyan-400',
     border: 'border-slate-700',
-    pdfBg: '#0f172a',
+    pdfBg: '#020617', // slate-950 - darker for better contrast
     pdfCard: '#1e293b',
     pdfText: '#ffffff',
     pdfMuted: '#94a3b8',
-    pdfAccent: '#22d3ee',
+    pdfAccent: '#06b6d4', // cyan-500 - more vibrant
+    pdfFooter: '#0f172a',
   },
   elegant: {
     label: 'Elegant',
@@ -124,11 +125,12 @@ const themeConfigs = {
     muted: 'text-gray-500',
     accent: 'text-emerald-600',
     border: 'border-gray-200',
-    pdfBg: '#fafafa',
+    pdfBg: '#f8fafc',
     pdfCard: '#ffffff',
-    pdfText: '#1a1a1a',
-    pdfMuted: '#6b7280',
+    pdfText: '#0f172a',
+    pdfMuted: '#475569',
     pdfAccent: '#059669',
+    pdfFooter: '#064e3b', // emerald-900
   },
   traditional: {
     label: 'Traditional',
@@ -138,11 +140,12 @@ const themeConfigs = {
     muted: 'text-amber-700',
     accent: 'text-orange-600',
     border: 'border-amber-200',
-    pdfBg: '#fefdfb',
-    pdfCard: '#fff8f0',
-    pdfText: '#3d2914',
-    pdfMuted: '#7c5e3c',
-    pdfAccent: '#c2410c',
+    pdfBg: '#fffbeb', // amber-50 - warm background
+    pdfCard: '#fff7ed', // orange-50
+    pdfText: '#431407', // orange-950
+    pdfMuted: '#9a3412', // orange-800
+    pdfAccent: '#ea580c', // orange-600
+    pdfFooter: '#431407',
   },
   modern: {
     label: 'Modern',
@@ -155,8 +158,9 @@ const themeConfigs = {
     pdfBg: '#ffffff',
     pdfCard: '#f8fafc',
     pdfText: '#0f172a',
-    pdfMuted: '#64748b',
-    pdfAccent: '#7c3aed',
+    pdfMuted: '#475569',
+    pdfAccent: '#7c3aed', // violet-600
+    pdfFooter: '#1e1b4b', // indigo-950
   },
 };
 
@@ -201,6 +205,7 @@ const generatePDF = async (
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
+    putOnlyUsedFonts: true,
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -208,20 +213,46 @@ const generatePDF = async (
   const margin = 20;
   let y = margin;
 
-  // Background
-  doc.setFillColor(t.pdfBg);
+  // Helper to convert hex to RGB array for better color accuracy
+  const hexToRgb = (hex: string): [number, number, number] => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result 
+      ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+      : [0, 0, 0];
+  };
+
+  // Set fill color using RGB for better accuracy
+  const setFillHex = (hex: string) => {
+    const [r, g, b] = hexToRgb(hex);
+    doc.setFillColor(r, g, b);
+  };
+
+  // Set text color using RGB
+  const setTextHex = (hex: string) => {
+    const [r, g, b] = hexToRgb(hex);
+    doc.setTextColor(r, g, b);
+  };
+
+  // Set draw color using RGB
+  const setDrawHex = (hex: string) => {
+    const [r, g, b] = hexToRgb(hex);
+    doc.setDrawColor(r, g, b);
+  };
+
+  // Full page background - use drawRect for cleaner fill
+  setFillHex(t.pdfBg);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
   // Brand tag
   doc.setFontSize(9);
-  doc.setTextColor(t.pdfAccent);
+  setTextHex(t.pdfAccent);
   doc.setFont('helvetica', 'bold');
   doc.text(brandName.toUpperCase(), margin, y, { align: 'left' });
   y += 10;
 
   // Headline
   doc.setFontSize(24);
-  doc.setTextColor(t.pdfText);
+  setTextHex(t.pdfText);
   doc.setFont('helvetica', 'bold');
   const headlineText = headline || `I built a new digital home for ${shopName}.`;
   const headlineLines = doc.splitTextToSize(headlineText, pageWidth - margin * 2);
@@ -230,7 +261,7 @@ const generatePDF = async (
 
   // Subheadline
   doc.setFontSize(11);
-  doc.setTextColor(t.pdfMuted);
+  setTextHex(t.pdfMuted);
   doc.setFont('helvetica', 'normal');
   const subheadlineText = subheadline || 'A modern, fast, and mobile-ready website designed for your business.';
   const subheadlineLines = doc.splitTextToSize(subheadlineText, pageWidth - margin * 2);
@@ -240,7 +271,7 @@ const generatePDF = async (
   // QR Section with card background
   const qrCardY = y;
   const qrCardHeight = 65;
-  doc.setFillColor(t.pdfCard);
+  setFillHex(t.pdfCard);
   doc.roundedRect(margin, qrCardY, pageWidth - margin * 2, qrCardHeight, 5, 5, 'F');
   
   // QR Code
@@ -252,15 +283,15 @@ const generatePDF = async (
   
   // QR Label
   doc.setFontSize(12);
-  doc.setTextColor(t.pdfText);
+  setTextHex(t.pdfText);
   doc.setFont('helvetica', 'bold');
   doc.text('Scan to Preview Website', pageWidth / 2, qrCardY + 55, { align: 'center' });
   
   y = qrCardY + qrCardHeight + 15;
 
   // Stats row
-  doc.setDrawColor(t.pdfAccent);
-  doc.setLineWidth(0.3);
+  setDrawHex(t.pdfAccent);
+  doc.setLineWidth(0.5);
   doc.line(margin, y, pageWidth - margin, y);
   y += 8;
   
@@ -274,11 +305,11 @@ const generatePDF = async (
   stats.forEach((stat, i) => {
     const statX = margin + statWidth * i + statWidth / 2;
     doc.setFontSize(14);
-    doc.setTextColor(t.pdfAccent);
+    setTextHex(t.pdfAccent);
     doc.setFont('helvetica', 'bold');
     doc.text(stat.value, statX, y, { align: 'center' });
     doc.setFontSize(8);
-    doc.setTextColor(t.pdfMuted);
+    setTextHex(t.pdfMuted);
     doc.setFont('helvetica', 'normal');
     doc.text(stat.label, statX, y + 5, { align: 'center' });
   });
@@ -289,7 +320,7 @@ const generatePDF = async (
 
   // Features grid
   doc.setFontSize(10);
-  doc.setTextColor(t.pdfText);
+  setTextHex(t.pdfText);
   doc.setFont('helvetica', 'bold');
   doc.text('What You Get', pageWidth / 2, y, { align: 'center' });
   y += 8;
@@ -303,22 +334,22 @@ const generatePDF = async (
     const fx = margin + col * (featureWidth + 5);
     const fy = y + row * (featureHeight + 5);
     
-    // Feature card
-    doc.setFillColor(t.pdfCard);
+    // Feature card background
+    setFillHex(t.pdfCard);
     doc.roundedRect(fx, fy, featureWidth, featureHeight, 3, 3, 'F');
     
-    // Accent border
-    doc.setDrawColor(t.pdfAccent);
-    doc.setLineWidth(1);
+    // Accent border on left
+    setDrawHex(t.pdfAccent);
+    doc.setLineWidth(1.5);
     doc.line(fx, fy + 1, fx, fy + featureHeight - 1);
     
     // Feature text
     doc.setFontSize(9);
-    doc.setTextColor(t.pdfText);
+    setTextHex(t.pdfText);
     doc.setFont('helvetica', 'bold');
     doc.text(feature.title, fx + 4, fy + 7);
     doc.setFontSize(7);
-    doc.setTextColor(t.pdfMuted);
+    setTextHex(t.pdfMuted);
     doc.setFont('helvetica', 'normal');
     const descLines = doc.splitTextToSize(feature.description, featureWidth - 8);
     doc.text(descLines.slice(0, 2), fx + 4, fy + 13);
@@ -326,18 +357,18 @@ const generatePDF = async (
   
   y += 55;
 
-  // Footer section
+  // Footer section with theme-appropriate dark background
   const footerHeight = 35;
-  doc.setFillColor('#0f172a');
+  setFillHex(t.pdfFooter);
   doc.roundedRect(margin, y, pageWidth - margin * 2, footerHeight, 5, 5, 'F');
   
   // Footer text
   doc.setFontSize(13);
-  doc.setTextColor('#ffffff');
+  setTextHex('#ffffff');
   doc.setFont('helvetica', 'bold');
   doc.text("Interested? Let's Chat", margin + 10, y + 12);
   doc.setFontSize(8);
-  doc.setTextColor('#94a3b8');
+  setTextHex('#d1d5db');
   doc.setFont('helvetica', 'normal');
   doc.text('Scan to message the developer anonymously via WhatsApp.', margin + 10, y + 20);
   
@@ -348,7 +379,7 @@ const generatePDF = async (
   
   if (qrDataUrls.whatsappQR) {
     // White background for QR
-    doc.setFillColor('#ffffff');
+    setFillHex('#ffffff');
     doc.roundedRect(footerQrX - 2, footerQrY - 2, footerQrSize + 4, footerQrSize + 4, 2, 2, 'F');
     addImageFromDataUrl(doc, qrDataUrls.whatsappQR, footerQrX, footerQrY, footerQrSize, footerQrSize);
   }
