@@ -7,6 +7,37 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?style=flat-square&logo=tailwind-css)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
+### 🌐 [Click here to view the Live Project on Vercel](https://pitch-print.vercel.app)
+
+
+
+
+
+---
+
+# 📄 Pitch-Print
+
+**Bridging the Gap Between Local Businesses and Modern Web Solutions.**
+
+**Pitch-Print** is a full-stack utility designed for freelance developers to bridge the digital divide. It generates high-quality, printable physical "pitch cards" that developers can leave with local shop owners or restaurants.
+
+---
+
+## 💡 The Problem
+
+Many local businesses in areas like Guwahati have no digital presence, but owners are often hesitant to engage with cold-calling developers.
+
+## 🛠️ The Solution
+
+Pitch-Print allows you to generate a professional, physical template that includes:
+
+* **A Custom QR Code:** Directly linking to a live demo of what *their* website could look like.
+* **Anonymous Contact:** Secure methods for owners to reach out if they are interested.
+* **Customer Engagement:** Secondary templates for the shop's customers to view the menu/services digitally.
+
+---
+
+
 ## ✨ Features
 
 - 🎨 **4 Theme Presets** — Dark, Elegant, Traditional, Modern
