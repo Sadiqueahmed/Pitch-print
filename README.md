@@ -7,7 +7,9 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?style=flat-square&logo=tailwind-css)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-### 🌐 [Click here to view the Live Project on Vercel](https://pitch-print.vercel.app)
+### 🖥️ Live Application Preview
+
+[![Med-Varta Screenshot](https://v1.screenshot.11ty.dev/https%3A%2F%2Fmed-varta.vercel.app%2F/opengraph/_2024_01_01)](https://pitch-print.vercel.app/)
 
 
 
