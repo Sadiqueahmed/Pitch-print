@@ -14,24 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "Pitch-Print — Professional Pitch Flyer Generator",
+  description: "Generate professional PDF pitch flyers with QR codes for local businesses. Anonymous developer lead generation tool.",
+  keywords: ["Pitch-Print", "Lead Generation", "PDF Generator", "QR Code", "Developer Tools", "Business Flyers"],
+  authors: [{ name: "Luit Lab" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.png",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "Pitch-Print",
+    description: "Professional Pitch Flyer Generator for Developers",
+    url: "https://pitch-print.vercel.app",
+    siteName: "Pitch-Print",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "Pitch-Print",
+    description: "Professional Pitch Flyer Generator for Developers",
   },
 };
 

@@ -513,10 +513,11 @@ export default function PitchPrintApp() {
       <header className="border-b border-gray-100 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Pitch-Print" className="h-10 w-10 rounded-lg shadow-sm" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                  Pitch Print
+                  Pitch-Print
                   <Badge variant="secondary" className="font-mono text-xs">{brandName}</Badge>
                 </h1>
                 <p className="text-sm text-gray-500 mt-0.5">Professional Pitch Flyer Generator</p>
@@ -909,7 +910,7 @@ export default function PitchPrintApp() {
       {/* Footer */}
       <footer className="mt-12 py-4 border-t border-gray-100">
         <div className="max-w-6xl mx-auto px-6 text-center text-xs text-gray-400">
-          <p>Pitch Print by {brandName} — Anonymous Developer Lead Generation</p>
+          <p>Pitch-Print by {brandName} — Anonymous Developer Lead Generation</p>
         </div>
       </footer>
     </div>
